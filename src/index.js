@@ -1,3 +1,42 @@
+/** 
+////////Import API key authentication module
+const apiKeyAuth = require("api-key-auth");
+
+///////////// Create a collection of api keys
+
+const apiKeys = new Map();
+
+apiKeys.set("123456789", {
+  id: 1,
+  name: "api1",
+  secret: "secret1"
+});
+
+apiKeys.set("987654321", {
+  id: 2,
+  name: "api2",
+  secret: "secret2"
+});
+
+//////////// Function to get secret associated to a key id
+
+function getSecret(keyId, done) {
+  if (!apiKeys.has(keyId)) {
+    return done(new Error("Unknown Api Key "));
+  }
+
+  //// Get api key by id
+  const clientApp = apiKeys.get(keyId);
+
+  //Pass api secret, and api key object (name and id of api secret) properties to done function.
+  done(null, clientApp.secret, {
+    id: clientApp.id,
+    name: clientApp.name
+  });
+}
+
+
+**/
 ///Import firebase utilities
 var firebase = require("firebase");
 
@@ -55,6 +94,11 @@ require("dotenv/config");
 
 var app = express();
 
+//////////////////////// Use Keys, pass getSecret function and api-key-auth module as a parameter
+//app.use(apiKeyAuth({ getSecret }));
+
+//// Configure express to utilize body parser
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 //Allow cross origin access

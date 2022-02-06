@@ -9,12 +9,12 @@
  */
 
 /**
-  -  Route to get user's order  History
-  -  Route to get list of orders by date
+  -  Get Route to get user's order  History
+  -  Nan Route to get list of orders by date
   -  Route to remove item from order
-  -  Route to add item to order 
-  -  Route to update an order's status
-  -  Route to place an order
+  -  Post Route to add item to order 
+  -  Put Route to update an order's status
+  -  Post Route to place an order
  */
 
 ////Import lodash utility tool
@@ -96,14 +96,15 @@ async function addOrderItem(order_id, order_item) {
 async function getUserOrderHistory(customer_id) {
   /// Get Orders where customer_id is given in param.
 
-  await db
+  return await db
     .collection("orders")
     .where("customer_id", "==", customer_id)
     .get()
     .then((querySnapshot) => {
-      querySnapshot.forEach((doc) => {
-        console.log(doc.id, "=>", doc.data());
+      const tempStore = querySnapshot.docs.map((doc) => {
+        return { id: doc.id, ...doc.data() };
       });
+      return tempStore;
     })
     .catch((err) => {
       console.log("Error getting users orders", err);
@@ -111,20 +112,33 @@ async function getUserOrderHistory(customer_id) {
 }
 
 ////// Function to place an order
-async function placeOrder(customer_id, store_id, orderItems, orderTotal) {
+async function placeOrder(
+  customer_id,
+  store_id,
+  orderItems,
+  orderTotal,
+  customerAddress,
+  customerMobile,
+  orderDeliveryTime
+) {
   await db
     .collection("orders")
     .add({
       customer_id: customer_id,
       store_id: store_id,
       order_items: orderItems,
+      customer_Address: customerAddress,
+      customer_Mobile: customerMobile,
+      orderDeliveryTime: orderDeliveryTime,
       orderTimeStamp: firebase.firestore.Timestamp.fromDate(
         new Date()
       ).toDate(),
-      orderStatus: "pending",
+      order_status: "pending",
       orderTotal: orderTotal
     })
     .then((docRef) => {
+      /////Send a text message to user  containing Order List, order Total and delivery Time
+      //and let them know they will be contacted before shopping begins and when package is being delivered.
       console.log("Order Added Successfully with ID", docRef.id);
     })
     .catch((error) => {
@@ -150,30 +164,83 @@ async function updateOrderStatus(order_id, order_status) {
 //Get the router function in express.
 var router = express.Router();
 
-router.get("/", (req, res) => {
-  res.send("Orders");
-  /** 
-  placeOrder(
-    "iujUEwfb0aaneKnVpsda",
-    "F4cOCHgRVWcxYT1FzWdq",
-    [
-      { product_id: "W7o9NpdYLyelvDkubYzd", price: "3.40" ,Quantity:"4"},
-      { product_id: "pKpHqXNGFOUN2sZnfDAe", price: "4.40", Quantity:"5" }
-    ],
-    "7.80"
-  );
-  // getUserOrderHistory("iujUEwfb0aaneKnVpsda");
-  //updateOrderStatus("tV7Jykp1IHJu1ayzWVQw", "fulfilled");
+////Router to add an item to an order
+router.post("/additem", (req, res) => {
+  var order_id = req.body.order_id;
+  var order_item = req.body.order_item;
 
-  addOrderItem("8TNVAFd6fHOId7KilE1q", {
-    product_id: "pKpHqXNGFOUN2sZnfDAe",
-    price: "4.40",
-    Quantity: "3"
-  });*/
-
-  removeOrderItem("8TNVAFd6fHOId7KilE1q", "pKNGFOUN2sZnfDAe");
+  addOrderItem(order_id, order_item)
+    .then(() => {
+      res.send("Item added to order successfully");
+    })
+    .catch((err) => {
+      console.log("Failed to add item to order", err);
+    });
 });
-//placeOrder(customer_id,store_id,orderItems,orderTimeStamp,orderTotal)
+
+////Router to place an order
+router.post("/place", (req, res) => {
+  var customer_id = req.body.customer_id;
+  var store_id = req.body.store_id;
+  var orderItems = req.body.orderItems;
+  var orderTotal = req.body.orderTotal;
+  var customerAddress = req.body.orderAddress;
+  var customerMobile = req.body.orderMobile;
+  var orderDeliveryTime = req.body.orderDeliveryTime;
+
+  placeOrder(
+    customer_id,
+    store_id,
+    orderItems,
+    orderTotal,
+    customerAddress,
+    customerMobile,
+    orderDeliveryTime
+  );
+  res.send("Order placed succesfully");
+
+  //////Send an order confirmation to user
+});
+
+///////// Router to get the order history of a customer
+router.get("/history", (req, res) => {
+  var customer_id = req.query.customer_id;
+
+  getUserOrderHistory(customer_id)
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => {
+      console.log("Error getting customer's order history");
+    });
+});
+
+/// Router to update status of an order
+router.put("/update", (req, res) => {
+  var order_id = req.body.order_id;
+  var order_status = req.body.order_status;
+
+  updateOrderStatus(order_id, order_status)
+    .then(() => {
+      res.send("Order status updated succesfully");
+    })
+    .catch((err) => {
+      console.log("Error updating order status", err);
+    });
+});
+
+///////////// Router to remove item from an order
+router.delete("/deleteitem", (req, res) => {
+  var product_id = req.body.product_id;
+  var order_id = req.body.order_id;
+  removeOrderItem(order_id, product_id)
+    .then(() => {
+      res.send("item deleted from order successfully");
+    })
+    .catch((err) => {
+      console.log("Error removing item from order");
+    });
+});
 
 //And then export the posts router
 module.exports = router;

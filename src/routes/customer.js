@@ -1,6 +1,6 @@
 /** List of functions
- *   addCustomer(user_id,name,address,mobile) - Adds a new customer 
- *   updateCustomerDetails(user_id,name,address,mobile)-  Updates the details of a customer
+ *   addCustomer(customer_id,name,address,mobile) - Adds a new customer 
+ *   updateCustomerDetails(customer_id,name,address,mobile)-  Updates the details of a customer
  *   Nan deleteCustomer(customer_id)-  Delete records of a customer
  *   getCustomerDetails(customer_id) - Get details of a particular customer
  * /
@@ -25,14 +25,6 @@ var db = firebase.firestore();
 //Import express
 var express = require("express");
 
-/** 
-///Import body parser
-const bodyParser = require("body-parser");
-
-//// Configure express to utilize body parser
-express.use(bodyParser.urlencoded({ extended: false }));
-express.use(bodyParser.json());*/
-
 //////////////// Function to add a new customer
 async function addCustomer(customer_id, name, address, mobile) {
   db.collection("customers")
@@ -52,7 +44,8 @@ async function addCustomer(customer_id, name, address, mobile) {
 
 //////////////// Function to update details of an existing customer
 async function updateCustomerDetails(customer_id, name, address, mobile) {
-  db.collection("customers")
+  await db
+    .collection("customers")
     .doc(customer_id)
     .set({
       customer_id: customer_id,
@@ -70,11 +63,12 @@ async function updateCustomerDetails(customer_id, name, address, mobile) {
 
 /////////Function to get details of a customer
 async function getCustomerDetails(customer_id) {
-  return db
+  return await db
     .collection("customers")
     .doc(customer_id)
     .get()
     .then((data) => {
+      console.log(data.data());
       return data.data();
     })
     .catch((err) => {
@@ -88,20 +82,36 @@ var router = express.Router();
 //////// Router to get details of a particular customer
 router.get("/", (req, res) => {
   var customer_id = req.query.customer_id;
-  try {
-    var customerDetails = getCustomerDetails(customer_id);
-    res.send(customerDetails);
-  } catch (err) {
-    console.log(err);
-  }
 
-  /** updateCustomerDetails(
-    "Opi6qJUzFJpY5Zi3OMip",
-    "asd",
-    "Daniel",
-    "flat 9",
-    "712321393"
-  );*/
+  getCustomerDetails(customer_id)
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => {
+      "Getting customer failed with error", err;
+    });
+});
+
+////Router to add a new customer
+router.post("/add", (req, res) => {
+  var customer_id = req.body.customer_id;
+  var name = req.body.name;
+  var address = req.body.address;
+  var mobile = req.body.mobile;
+
+  addCustomer(customer_id, name, address, mobile);
+  res.send("Customer with ID " + customer_id + " succesfully");
+});
+
+/// Router to update details of a customer
+router.put("/update", (req, res) => {
+  var customer_id = req.body.customer_id;
+  var name = req.body.name;
+  var address = req.body.address;
+  var mobile = req.body.mobile;
+
+  updateCustomerDetails(customer_id, name, address, mobile);
+  res.send("Customer details updated succesfully");
 });
 
 //And then export the posts router
