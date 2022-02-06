@@ -615,6 +615,11 @@ anymatch@~3.1.2:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
 
+api-key-auth@0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/api-key-auth/-/api-key-auth-0.2.3.tgz#a1573039771a1649a12d4efc31816bb143daec5e"
+  integrity sha512-a06yrYAYGm6htguLSmoKk4D0vB+u1CbvUG2lnQKACeOrvBrxNnK8gny4m+zNU48hisRy9Pd4Q4F4S4xtco8rsQ==
+
 aproba@^1.0.3:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/aproba/-/aproba-1.2.0.tgz#6802e6264efd18c790a1b0d517f0f2627bf2c94a"

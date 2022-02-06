@@ -16,7 +16,7 @@
  *  Nan - router.get("/delproduct", (req, res) - Remove a product from a store's inventory.
  *  Nan - router.get("/updateproductInStore", (req, res) - Update a product's details in a store's inventory
  *  router.get("/", (req, res) - Returns the details of a store.
- *  router.get("/delete", (req, res) - Deletes a store.
+ *  NAN router.get("/delete", (req, res) - Deletes a store.
  *  router.get("/create", (req, res) - Creates a new store.
  *  router.get("/update", (req, res) - Updates a store's details.
  *  router.get("/all", (req, res) - Returns all store objects
@@ -139,21 +139,6 @@ async function deleteStore(store_id) {
     });
 }
 
-/** 
-//////// Function to create a new product, Params:  productImageUrl, productname.
-async function createProduct(productImageUrl, productname) {
-  db.collection("products")
-    .add({
-      name: productname,
-      image_url: productImageUrl
-    })
-    .then(console.log("Product added successfully"))
-    .catch((err) => {
-      console.log("Product creation failed with error", err);
-    });
-}
-***/
-
 ///////////////////////////// Function to return all inventories
 async function getAllInventories() {
   const inventories = await db.collection("inventories");
@@ -236,7 +221,9 @@ router.get("/addproduct", (req, res) => {
 
 /////////////Get Router to Get a store's details using store id, accepts a store id
 router.get("/", (req, res) => {
-  getStore("VegIupbAE8F7J2Ic1nNq")
+  var store_id = req.query.store_id;
+
+  getStore(store_id)
     .then((results) => {
       res.send(results.data());
     })
@@ -245,27 +232,38 @@ router.get("/", (req, res) => {
     });
 });
 
-///////////////////////////// Router to delete a store
-
-router.get("/delete", (req, res) => {
-  deleteStore("DYL5lsPb7vUoscpRx71q");
-});
-
 /////////////////////////////// Router to Create a new store
 
-router.get("/create", (req, res) => {
-  createStore("Mosta Afro", "#", "Buggiba", "+35677157245");
+router.post("/add", (req, res) => {
+  var name = req.body.name;
+  var logo_url = req.body.logo_url;
+  var address = req.body.address;
+  var mobile = req.body.mobile;
+
+  createStore(name, logo_url, address, mobile)
+    .then(() => {
+      res.send("Store created successfully");
+    })
+    .catch((err) => {
+      console.log("Error creating store", err);
+    });
 });
 
 //////////////////////////////// Router to Update Store
-router.get("/update", (req, res) => {
-  updateStore(
-    "PUXZdD9fUpXtJkvFSvr6",
-    "Afro Corner Store",
-    "Mhrihel",
-    "#2",
-    "77157243"
-  );
+router.put("/update", (req, res) => {
+  var store_id = req.body.store_id;
+  var name = req.body.name;
+  var logo_url = req.body.logo_url;
+  var address = req.body.address;
+  var mobile = req.body.mobile;
+
+  updateStore(store_id, name, address, logo_url, mobile)
+    .then(() => {
+      res.send("Store updated successfully");
+    })
+    .catch((err) => {
+      console.log("Error updating store details");
+    });
 });
 
 ////////////////////////  Router to get all stores in database

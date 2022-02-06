@@ -7,6 +7,7 @@
     "start": "nodemon src/index.js"
   },
   "dependencies": {
+    "api-key-auth": "0.2.3",
     "body-parser": "1.19.0",
     "cors": "2.8.5",
     "dotenv": "10.0.0",

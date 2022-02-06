@@ -1,3 +1,12 @@
+/**   Functions
+ *    addShopper(name, mobile) - Adds a new shopper
+ *    getShopper(shopper_id) - Gets details of a shopper
+ *    getAllShoppers() - Gets list of all available shoppers
+ *    updateShopper(shopper_id, name, mobile)  - Updates details of a particular shoper
+ *    deleteShopper(shopper_id) - Deletes a shopper
+ *
+ */
+
 /// Load firebase library
 var { firebase } = require("../firebaseConfig");
 
@@ -79,15 +88,6 @@ function deleteShopper(shopper_id) {
       "Error deleting shopper field ";
     });
 }
-
-router.get("/", (req, res) => {
-  res.send("We are getting a shopper");
-
-  // addShopper("Micheal Mikhail", 34234232);
-  // getAllShoppers();
-  //  deleteShopper("S60ZyrnTuAThhjIAx1WG");
-  getShopper("98WU1Ab68aXSlKzbDaLQ");
-});
 
 //And then export the posts router
 module.exports = router;
